@@ -233,16 +233,34 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function handleSend() {
+        async function sendMessageToAI(message) {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer ضع_مفتاح_API_هنا"
+                },
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: message }]
+                })
+            });
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        async function handleUserMessage(message) {
+            addMessage(message, true);
+            const reply = await sendMessageToAI(message);
+            addMessage(reply, false);
+        }
+
+        async function handleSend() {
             const text = messageInput.value.trim();
             if (text) {
-                addMessage(text, true);
                 messageInput.value = '';
-                
-                // Simulate bot response
-                setTimeout(() => {
-                    addMessage('شكراً على رسالتك! أنا هنا للمساعدة.', false);
-                }, 500);
+                await handleUserMessage(text);
             }
         }
 
